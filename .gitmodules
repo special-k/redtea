@@ -1,0 +1,3 @@
+[submodule "examples/todolist"]
+	path = examples/todolist
+	url = https://github.com/special-k/todolist
