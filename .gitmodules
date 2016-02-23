@@ -1,3 +1,6 @@
 [submodule "examples/todolist"]
 	path = examples/todolist
 	url = https://github.com/special-k/todolist
+[submodule "examples/repaint"]
+	path = examples/repaint
+	url = https://github.com/special-k/repaint
