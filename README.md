@@ -182,7 +182,27 @@ class SomeWidget extends RT.Widget
 
 ## Менеджеры
 
-TODO
+![Менеджер подключенный к виджету](https://img-fotki.yandex.ru/get/70180/43145129.3/0_da04b_96d8d340_orig)
+Другая основная сущность в redtea - это менеджер. Менеджеры - это объекты, доступ к которым можно получить из виджетов и других менеджеров, для этого необходимо выполнить процедуру подключения.
+```coffee
+class SomeWidget extends RT.Widget
+
+  managers: ['someManager']
+  
+  someManagerAdded: ->
+    @someManager # <-- обращение к подключенному менеджеру
+```
+Очевидно, что для этого менеджер нужно регистрировать, это, как правило, делается в основном классе приложения.
+```coffee
+class glob.Repaint extends RT.Stratum
+
+  constructor: ->
+    super
+    @addManager 'someManager', new SomeManager
+```
+После этого менеджер можно подключать в виджеты и другие менеджеры.  
+Назначение менеджеров, как уже сказано может быть совершенно разным. Менеджер это только способ подключения.  
+Наиболее очевидная задача менеджера - адаптация данных модели к структуре storageItem виджетов. Наглядный пример в приложении [repaint](https://github.com/special-k/repaint/blob/master/lib/coffeescripts/repaint.js.coffee#L15).
 
 ## Основные преимущества
 
