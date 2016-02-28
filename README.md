@@ -177,17 +177,17 @@ class SomeWidget extends RT.Widget
 
   collectionName: 'someName'
 ```
-Существует возможность подписаться сразу на изменения всех storageItem коллекции. Можно представить, например, коллекцию полей формы. Т.е. коллекция виджета определяется исходя из его функционального назначения. Так образуется иерархичная модель данных виджетов.
-Также существует возможность пробрасывать значения полей в дочерние/родительские виджеты. Тем не менее необходимый функционал StorageItem все еще в стадии понимания. Планируется множество фичь для контроля передаваемых значений.
+Существует возможность подписаться сразу на изменения всех storageItem коллекции. Т.о. коллекция виджета определяется исходя из его функционального назначения.
 
 ## Менеджеры
 
-![Менеджер подключенный к виджету](https://img-fotki.yandex.ru/get/70180/43145129.3/0_da04b_96d8d340_orig)
-Другая основная сущность в redtea - это менеджер. Менеджеры - это объекты, доступ к которым можно получить из виджетов и других менеджеров, для этого необходимо выполнить процедуру подключения.
+![Менеджер подключенный к виджету](https://img-fotki.yandex.ru/get/70180/43145129.3/0_da04b_96d8d340_orig)  
+
+Другая основная сущность в redtea - это менеджер. Менеджеры - это объекты, доступ к которым можно получить из виджетов и других менеджеров, для чего необходимо выполнять процедуру подключения.
 ```coffee
 class SomeWidget extends RT.Widget
 
-  managers: ['someManager']
+  managers: ['someManager'] # <-- подключение менеджера
   
   someManagerAdded: ->
     @someManager # <-- обращение к подключенному менеджеру
@@ -198,36 +198,28 @@ class glob.Repaint extends RT.Stratum
 
   constructor: ->
     super
-    @addManager 'someManager', new SomeManager
+    @addManager 'someManager', new SomeManager # <-- добавление менеджера в приложение
 ```
 После этого менеджер можно подключать в виджеты и другие менеджеры.  
-Назначение менеджеров, как уже сказано может быть совершенно разным. Менеджер это только способ подключения.  
-Наиболее очевидная задача менеджера - адаптация данных модели к структуре storageItem виджетов. Наглядный пример в приложении [repaint](https://github.com/special-k/repaint/blob/master/lib/coffeescripts/repaint.js.coffee#L15).
+Назначение менеджеров, как уже сказано, может быть совершенно разным. Менеджер, по сути, просто способ подключения функционала.  
+Наиболее очевидная задача менеджера - адаптация данных модели к структуре storageItem виджетов. Пример в приложении [repaint](https://github.com/special-k/repaint/blob/master/lib/coffeescripts/repaint.js.coffee#L15).
 
-## Основные преимущества
+При подключении одного менеджера в нескольких можно реализовать связку, напоминающую парадигму MVC
 
-### 1. Взаимодействие с DOM без посредников
+![Менеджер подключенный к виджету](https://img-fotki.yandex.ru/get/66316/43145129.3/0_da086_60b3e4b4_orig)
 
-Для примера создадим небольшой фрагмент HTML: блок, содержащий цену, с отдельным отображением целой части и “копеек”.
-Пара слов о cofeescript.
+Говоря об MVC следует отметить, что реализации модели в redtea нет, нужно будет использовать модели из других библиотек. Это происходит потому, что реализация модели сильно связана с конкретной реализацией бэкенда, и redtea стремиться быть агностичным по отношении к бэкенду. В целом, через подписку на изменеие storageItem взаимодействие с моделью устанавливается достаточно легко.
+
+## Cofeescript и DSL
+
+Язык, на котором вы пишете, должен соответствовать задачам. Наилучший вариант - взять язык общего назначения и реализовать внутри него DSL (можно, конечно, написать язык с "0", но это трудоемко и достаточно рисковано). Javascript плохо подходит для этой цели, все-таки это язык с достаточно скудным синтаксисом. Совсем другое дело coffeescript - благодаря лаконичности языковых конструкций, он очень доброжелателен к DSL. К слову, reactjs и angularjs2 так же используют специфичные языки.
 
 >Если вы никогда не видели coffescipt, то нужно знать примерно следующие: cofeescript мало чем отличает от js, в основном изменения носят косметический характер. Так в cofeescript “this.” заменен символом “@”, “function” заменен “->”, а вместо фигурных скобок используются питоноподобные отступы. Кроме того скобки часто можно опускать.
 
-```coffee
-document.body.append ->
-  @div class: 'price', ->
-    @span class: 'mainSum', ->
-      @tn '10'
-    @span class: 'additionSum', ->
-      @tn '00'
-```
-Это добавляет на страницу примерно следующий HTML-код
-```html
-<div class="price">
-  <span class="mainSum">10</span>
-  <span class="additionSum">00</span>
-</div>
-```
+## Почему redtea настолько быстр
+
+### 1. Взаимодействие с DOM без посредников
+
 Для формирования узлов DOM-дерева используется haml/jade подобный DSL. Однако в отличии от первых, это не шаблонизатор. Каждый вызов функции здесь непосредственно создает узел (по сути вызывается createElement).
 
 В последствии, вы легко можете обращаться к этим узлам.
@@ -258,167 +250,5 @@ additionSum.nodeValue = '50'
 
 Вы хотели поменять текст и вы сделали именно это. Я думаю, очевидно, что даже одна из НЕ сделанных операций гораздо тяжеловеснее работы с текстовыми узлами (а после все удивляются, отчего сайты ТАК тормозят!)
 
-### 2. Привязка функционала к определенному блоку элементов – виджеты
-Мы продолжим работать с этим небольшим блоком цены: сделаем работу с ним более удобной.
-```coffee
-class Price extends RT.Widget
-
-  @register 'price'
-
-  collectionName: 'prices'
-
-  createDom: (self)->
-    @div class: 'price', ->
-      @span class: 'mainSum', ->
-        self.mainSum = @tn '0'
-      @span class: 'additionSum', ->
-        self.additionSum = @tn '00'
-
-  init: (params)->
-    @setValue params.value
-
-  setValue: (v)->
-    t = v.toFixed(2).split('.')
-    @mainSum.nodeValue = t[0]
-    @additionSum.nodeValue = t[1]
-```
-Создав класс виджета, можно работать следующим образом:
-```coffee
-price = null
-document.body.append ->
-  price = @price value: 10
-
-price.setValue 20.5
-```
-Все выглядит так, будто в HTML есть элемент "price".
-Это одна из основных фишек виджетов – бесшовное встраивание в DSL.
-
-### 3. Привязка данных - автоструктуры
-Несколько усложним задачу - сделаем список цен.
-
-Вначале создадим сам виджет списка.
-```coffee
-class List extends RT.Widget
-
-  @register 'list'
-
-  createDom: (self)->
-    @div class: 'list'
-```
-И добавим на страницу:
-```coffee
-list = null
-document.body.append ->
-  list = @list ->
-    @price value: 10
-    @price value: 20
-    @price value: 30
-```
-При формировании списка автоматически создалась структура данных.
-```coffee
-list.storageItem.get('widgets')[0].get('priceValue') //null – пока что она пустая
-```
-В каждом виджете есть объект storageItem, при этом storageItem дочерних компонентов попадает в родительский.
-storageItem представляет собой простое key-value хранилище, с событиями на изменение полей.
-Существует возможность указать конкретное поле родительского компонента для добавления дочерних storageItem (по-умолчанию это поле называется "widgets").
-Теперь необходимо задействовать данный механизм в виджетах:
-```coffee
-class List extends RT.Widget
-
-  @register 'list'
-
-  createDom: (self)->
-    @div class: 'list'
-
-  init: ->
-    @storageItem.getCollectionField('widgets').bi 'onItemAdded', 'onItemAdded', context: @
-
-  onItemAdded: (eventObject, item)->
-    @dom.append ->
-      @price storageItem: item
-
-
-class Price extends RT.Widget
-
-  @register 'price'
-
-  createDom: (self)->
-    @div class: 'price', ->
-      @span class: 'mainSum', ->
-        self.mainSum = @tn '0'
-      @span class: 'additionSum', ->
-        self.additionSum = @tn '00'
-
-  init: ->
-    @setValue @storageItem.get('priceValue') || 0
-    @storageItem.bi 'onFieldChanged', 'onFieldChanged', context: @
-
-  setValue: (v)->
-    t = v.toFixed(2).split('.')
-    @mainSum.nodeValue = t[0]
-    @additionSum.nodeValue = t[1]
-
-  onFieldChanged: (eventObject, field, value)->
-    if field == 'priceValue'
-      @setValue value
-```
-Создание списка станет выглядить несколько иначе:
-```coffee
-list = null
-document.body.append ->
-  list = @list ->
-    @price storageData: 
-      priceValue: 0
-```
-Обновление значения:
-```coffee
-list.storageItem.get('widgets')[0].setValue 'priceValue', 10
-```
-Другой способ добавления строк:
-```coffee
-list.storageItem.get('widgets').push new RT.StorageItem priceValue: 20
-list.storageItem.get('widgets').push new RT.StorageItem priceValue: 30
-```
-Т.о. в концепции создания виджетов нет различия между добавлением данных и добавлением виджетов через DSL: как бы вы не создавали виджеты, вы будете получать одинаковую структуру DOM, и одинаковую структуру данных.
-
-Через структуры данных можно легко взаимодействовать с сервером.
-Например с помощью Backbone.
-```coffee
-BackboneModel.on 'sync', ->
-  #//функция, которая сверяет данные в list.storageItem.get('widgets') и модели bacbone
-
-list.storageItem.get('widgets').bi 'onItemAdded', (eventObject, item)->
-  backboneItem = new BackboneModel item.serialize()
-  backboneItem.save()
-```
-### 4. Управление данными и глобальное взаимодействие – менеджеры
-Сделаем механизм управления данными более удобным.
-```coffee
-class DataManager extends RT.BaseManager
-  constructor: ->
-
-  storageItem: (item)->
-    BackboneModel.on 'sync', ->
-      #//функция, которая сверяет данные в list.storageItem.get('widgets') и модели bacbone
-
-    item.bi 'onItemAdded', (eventObject, item)->
-      backboneItem = new BackboneModel item.serialize()
-      backboneItem.save()
-```
-Привязка менеджеров осуществляется через объект RT.Stratum
-```coffee
-class App extends RT.Stratum
-  constructor: ->
-    super
-    @addManager 'dataManager', new  DataManager
-
-class List extends RT.Widget
-
-  @register 'list'
-
-  managers: ['dataManager'] # подключаем менеджер
-
-  dataManagerLoaded: -> # инициируем работы менеджера
-    @dataManager.addStorageItem @storageItem.getCollectionField('widgets')
-```
-Менеджеры могут иметь совершенно разное назначение, задействоваться в нескольких виджетах одновременно, а также в других менеджерах.
+### 2. Пакетное обновление DOM
+События StorageItem распространяются пакетно, тем самым обеспечивая высочайшую производительность [dbmonster](http://special-k.github.io/repaint).
