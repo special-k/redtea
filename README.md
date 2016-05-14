@@ -83,8 +83,7 @@ for(var i = 0; i < count; i++ ) {t.push({task: 'задача ' + i, finished: fa
 localStorage.setItem('todos-redtea', JSON.stringify(t));
 ```
 К примеру, на моем ПК в firefox достаточно 1000 *(всего лишь 1000!)* строк, чтобы увидеть существенное торможение reactjs на массовых операция (отметить все/снять все, посмотреть все/активные/сделанные задачи).
-
-Отмечу, что код приложения на redtea не оптимален, особенно функция [scope()](https://github.com/special-k/todolist/blob/master/lib/coffeescripts/todolist.js.coffee#L30) - она просто чудовищно не оптимальна и чрезвычайно часто используется. И не смотря на это, приложение на redtea гораздо быстрее reactjs - полагаю, это говорит о верности концепции.
+Еще один тест на производительность - это [dbmonster](http://special-k.github.io/repaint) (и прохождение этого теста другими библиотеками http://mathieuancelin.github.io/js-repaint-perfs/). 
 
 # Redtea
 
